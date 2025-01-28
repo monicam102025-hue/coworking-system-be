@@ -9,10 +9,25 @@ from app.core.dependencies import get_db, get_current_user
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 
-@router.get("/", response_model=List[BookingSchema])
+@router.get("/")
 def get_bookings(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    bookings = db.query(Booking).filter(Booking.user_id == current_user.id).all()
-    return bookings
+    bookings = db.query(Booking).join(Space, Booking.space_id == Space.id).filter(Booking.user_id == current_user.id).all()
+
+    return [
+        {
+            "id": booking.id,
+            "space": {
+                "id": booking.space.id,
+                "name": booking.space.name,
+                "price_per_hour": booking.space.price_per_hour,
+            },
+            "start_time": booking.start_time,
+            "end_time": booking.end_time,
+            "status": booking.status,
+            "total_price": booking.total_price,
+        }
+        for booking in bookings
+    ]
 
 
 @router.post("/", response_model=BookingSchema)
@@ -53,13 +68,19 @@ def create_booking(booking: BookingCreate, current_user: User = Depends(get_curr
 
 @router.put("/{booking_id}", response_model=BookingSchema)
 def update_booking(booking_id: str, booking_update: BookingUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # Busca la reserva
+
+    
     booking = db.query(Booking).filter(Booking.id == booking_id, Booking.user_id == current_user.id).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
 
+    # Itera sobre los campos enviados en el request
     for key, value in booking_update.dict(exclude_unset=True).items():
-        setattr(booking, key, value)
+        if value is not None:  # Asegúrate de no asignar valores None
+            setattr(booking, key, value)
 
+    # Guarda los cambios
     db.commit()
     db.refresh(booking)
     return booking

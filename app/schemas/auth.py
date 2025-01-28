@@ -10,3 +10,8 @@ class UserCreate(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class AuthResponse(BaseModel):
+    user: UserBase
+    access_token: str
+    token_type: str

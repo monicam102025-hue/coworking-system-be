@@ -15,9 +15,13 @@ class BookingCreate(BookingBase):
     end_time: datetime
 
 class BookingUpdate(BaseModel):
-    start_time: Optional[datetime]
-    end_time: Optional[datetime]
-    status: Optional[str]
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    status: Optional[str] = None
+    total_price: Optional[float] = None
+
+    class Config:
+        orm_mode = True
 
 class Booking(BookingBase):
     id: int

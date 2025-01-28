@@ -15,9 +15,10 @@ def get_spaces(db: Session = Depends(get_db)):
     Devuelve una lista de espacios activos.
     """
     spaces = db.query(SpaceModel).filter(SpaceModel.is_active == True).order_by(SpaceModel.name).all()
+    print(spaces)
     return spaces
 
-@router.post("/{space_id}/availability")
+@router.get("/{space_id}/availability")
 def check_availability(space_id: str, start_time: str, end_time: str, db: Session = Depends(get_db)):
     """
     Verifica si un espacio está disponible en un rango de tiempo.
@@ -30,6 +31,5 @@ def check_availability(space_id: str, start_time: str, end_time: str, db: Sessio
     ).all()
 
     if conflicts:
-        raise HTTPException(status_code=400, detail="Espacio no disponible en este horario")
-    
-    return {"message": "Espacio disponible"}
+        return {"available": False}  # Espacio no disponible
+    return {"available": True}  # Espacio disponible

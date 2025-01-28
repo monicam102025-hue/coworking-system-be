@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from app.routers import users, auth, bookings, spaces
+from app.routers import users, auth, bookings, spaces, dashboard
+
 from app.core.database import create_tables
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -19,6 +20,7 @@ create_tables()
 app.include_router(auth.router)
 app.include_router(bookings.router)
 app.include_router(spaces.router)
+app.include_router(dashboard.router)
 
 @app.get("/")
 def root():

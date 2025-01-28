@@ -16,7 +16,7 @@ def get_space_stats(db: Session = Depends(get_db)):
         db.query(Space.name, func.count(Booking.id).label("bookings"))
         .join(Booking, Booking.space_id == Space.id, isouter=True)
         .group_by(Space.name)
-        .order_by(Space.name)
+        .order_by(func.count(Booking.id).desc())  # Ordenar por cantidad de reservas
         .all()
     )
     return [{"name": stat.name, "bookings": stat.bookings or 0} for stat in space_stats]
@@ -52,12 +52,12 @@ def get_dashboard_metrics(db: Session = Depends(get_db)):
     Devuelve métricas generales para el dashboard.
     """
     # Total de reservas
-    total_bookings = db.query(func.count(Booking.id)).scalar()
+    total_bookings = db.query(func.count(Booking.id)).scalar() or 0
 
     # Espacios activos
-    active_spaces = db.query(func.count(Space.id)).filter(Space.is_active == True).scalar()
+    active_spaces = db.query(func.count(Space.id)).filter(Space.is_active == True).scalar() or 0
 
-    # Duración promedio de reservas
+    # Duración promedio de reservas (en horas)
     booking_durations = db.query(Booking.start_time, Booking.end_time).all()
     if booking_durations:
         avg_duration = sum(
@@ -67,8 +67,17 @@ def get_dashboard_metrics(db: Session = Depends(get_db)):
     else:
         avg_duration = 0
 
+    # Tasa de ocupación: (total horas reservadas / total horas disponibles) * 100
+    total_hours_reserved = sum(
+        (end_time - start_time).total_seconds() / 3600
+        for start_time, end_time in booking_durations
+    )
+    total_available_hours = active_spaces * 24  # Asume 24 horas disponibles por día por espacio
+    occupancy_rate = (total_hours_reserved / total_available_hours * 100) if total_available_hours else 0
+
     return {
-        "total_bookings": total_bookings,
-        "active_spaces": active_spaces,
-        "average_booking_duration": round(avg_duration, 1),
+        "totalBookings": total_bookings,
+        "activeSpaces": active_spaces,
+        "averageBookingDuration": round(avg_duration, 1),
+        "occupancyRate": round(occupancy_rate, 1),
     }

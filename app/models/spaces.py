@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, Float, ARRAY
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class Space(Base):
@@ -15,3 +16,5 @@ class Space(Base):
     city = Column(String, nullable=False)
     amenities = Column(ARRAY(String), nullable=True)
     image_url = Column(String, nullable=True)
+
+    bookings = relationship("Booking", back_populates="space")

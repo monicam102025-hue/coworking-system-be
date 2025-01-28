@@ -6,7 +6,7 @@ app = FastAPI()
 
 create_tables()
 
-app.include_router(users.router)
+#app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(bookings.router)
 app.include_router(spaces.router)

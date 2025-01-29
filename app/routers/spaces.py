@@ -9,7 +9,7 @@ from app.core.dependencies import get_db
 
 router = APIRouter(prefix="/spaces", tags=["spaces"])
 
-@router.get("/", response_model=List[Space])
+@router.get("", response_model=List[Space])
 def get_spaces(db: Session = Depends(get_db)):
     """
     Devuelve una lista de espacios activos.

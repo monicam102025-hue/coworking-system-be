@@ -9,7 +9,7 @@ from app.core.dependencies import get_db, get_current_user
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 
-@router.get("/")
+@router.get("")
 def get_bookings(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     bookings = db.query(Booking).join(Space, Booking.space_id == Space.id).filter(Booking.user_id == current_user.id).all()
 
@@ -30,7 +30,7 @@ def get_bookings(current_user: User = Depends(get_current_user), db: Session = D
     ]
 
 
-@router.post("/", response_model=BookingSchema)
+@router.post("", response_model=BookingSchema)
 def create_booking(booking: BookingCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Crea una nueva reserva para un espacio.
